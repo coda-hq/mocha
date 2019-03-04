@@ -135,8 +135,12 @@ const proc = spawn(process.execPath, args, {
 proc.on('exit', (code, signal) => {
   process.on('exit', () => {
     if (signal) {
+      console.trace(`Killing mocha with signal: ${signal}`);
       process.kill(process.pid, signal);
     } else {
+      if (code) {
+        console.trace(`Exiting mocha with code: ${code}`);
+      }
       process.exit(code);
     }
   });
@@ -144,6 +148,8 @@ proc.on('exit', (code, signal) => {
 
 // terminate children.
 process.on('SIGINT', () => {
+  console.trace('Received SIGINT, kill child process with SIGINT');
   proc.kill('SIGINT'); // calls runner.abort()
+  console.trace("SIGINT didn't work, kill child process with SIGTERM");
   proc.kill('SIGTERM'); // if that didn't work, we're probably in an infinite loop, so make it die.
 });
