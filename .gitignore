@@ -1,7 +1,7 @@
 # Mocha-specific
 docs/_site
 docs/_dist
-mocha.js
+# mocha.js
 .karma/
 !lib/mocha.js
 
