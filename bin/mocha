@@ -132,13 +132,22 @@ const proc = spawn(process.execPath, args, {
   stdio: 'inherit'
 });
 
+const logMemoryUsage = () => {
+  const mem = process.memoryUsage();
+  for (let k in mem) {
+    console.log(`${k}: ${Math.round((mem[k] / 1024 / 1024) * 100) / 100} MB`);
+  }
+};
+
 proc.on('exit', (code, signal) => {
   process.on('exit', () => {
     if (signal) {
+      logMemoryUsage();
       console.trace(`Killing mocha with signal: ${signal}`);
       process.kill(process.pid, signal);
     } else {
       if (code) {
+        logMemoryUsage();
         console.trace(`Exiting mocha with code: ${code}`);
       }
       process.exit(code);
@@ -148,8 +157,10 @@ proc.on('exit', (code, signal) => {
 
 // terminate children.
 process.on('SIGINT', () => {
+  logMemoryUsage();
   console.trace('Received SIGINT, kill child process with SIGINT');
   proc.kill('SIGINT'); // calls runner.abort()
+  logMemoryUsage();
   console.trace("SIGINT didn't work, kill child process with SIGTERM");
   proc.kill('SIGTERM'); // if that didn't work, we're probably in an infinite loop, so make it die.
 });
